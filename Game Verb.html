@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fun Verb Quiz!</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+
+    body {
+      font-family: 'Comic Neue', cursive;
+      background: linear-gradient(to right, #f6d365, #fda085);
+      text-align: center;
+      color: #333;
+      padding: 20px;
+    }
+
+    .quiz-container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    .answers-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .answer-btn {
+      padding: 10px 20px;
+      border: none;
+      background-color: #00c3ff;
+      color: white;
+      font-size: 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .answer-btn:hover {
+      background-color: #009ec3;
+    }
+
+    #feedback {
+      font-size: 24px;
+      margin: 20px;
+      height: 40px;
+    }
+
+    #next-btn {
+      padding: 10px 20px;
+      background: #ff4081;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #ff5722;
+      margin-bottom: 20px;
+    }
+
+    .heart-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #heart {
+      width: 40px;
+      height: 40px;
+    }
+
+    #lives {
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <audio id="correctSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+  <audio id="wrongSound" src="https://www.soundjay.com/button/beep-09.wav"></audio>
+  <audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" autoplay loop></audio>
+
+  <div class="quiz-container">
+    <h1>🎉 Fun Verb Quiz 🎉</h1>
+    <div class="heart-container">
+      <img id="heart" src="https://img.icons8.com/ios-filled/50/000000/heart.png" alt="Heart" />
+      <p id="lives">Lives: 3</p>
+    </div>
+    <div class="question-box">
+      <p id="question-text">Loading question...</p>
+      <div id="answers" class="answers-grid"></div>
+    </div>
+    <p id="feedback"></p>
+    <button id="next-btn">Next Question</button>
+  </div>
+
+  <script>
+    const questions = [
+      { question: "She ___ a book every day.", options: ["read", "reads", "reading"], answer: "reads" },
+      { question: "They ___ to school by bike.", options: ["go", "goes", "going"], answer: "go" },
+      { question: "I ___ breakfast at 7 a.m.", options: ["eat", "eats", "eating"], answer: "eat" },
+      { question: "He ___ football on Sundays.", options: ["play", "plays", "playing"], answer: "plays" },
+      { question: "We ___ happy to see you!", options: ["is", "are", "am"], answer: "are" },
+      { question: "My cat ___ milk.", options: ["like", "likes", "liking"], answer: "likes" },
+      { question: "They ___ English very well.", options: ["speak", "speaks", "speaking"], answer: "speak" },
+      { question: "You ___ very tall.", options: ["is", "are", "am"], answer: "are" },
+      { question: "The baby ___ now.", options: ["sleep", "sleeps", "is sleeping"], answer: "is sleeping" },
+      { question: "I ___ to music every day.", options: ["listen", "listens", "listening"], answer: "listen" },
+      { question: "He ___ his homework.", options: ["do", "does", "doing"], answer: "does" },
+      { question: "We ___ our hands before eating.", options: ["wash", "washes", "washing"], answer: "wash" },
+      { question: "They ___ TV every night.", options: ["watch", "watches", "watching"], answer: "watch" },
+      { question: "She ___ to school on foot.", options: ["go", "goes", "going"], answer: "goes" },
+      { question: "I ___ water every morning.", options: ["drink", "drinks", "drinking"], answer: "drink" },
+      { question: "He ___ fast in the race.", options: ["run", "runs", "running"], answer: "runs" },
+      { question: "You ___ well in the test!", options: ["did", "do", "done"], answer: "did" },
+      { question: "They ___ lunch at noon.", options: ["have", "has", "having"], answer: "have" },
+      { question: "We ___ for the bus together.", options: ["wait", "waits", "waiting"], answer: "wait" },
+      { question: "She ___ her room every day.", options: ["clean", "cleans", "cleaning"], answer: "cleans" },
+    ];
+
+    let currentQuestion = 0;
+    let lives = 3;
+    const questionText = document.getElementById("question-text");
+    const answersContainer = document.getElementById("answers");
+    const feedback = document.getElementById("feedback");
+    const nextBtn = document.getElementById("next-btn");
+    const livesText = document.getElementById("lives");
+    const heartImg = document.getElementById("heart");
+    const correctSound = document.getElementById("correctSound");
+    const wrongSound = document.getElementById("wrongSound");
+
+    function loadQuestion() {
+      const question = questions[currentQuestion];
+      questionText.textContent = question.question;
+      answersContainer.innerHTML = '';
+      question.options.forEach(option => {
+        const button = document.createElement('button');
+        button.classList.add('answer-btn');
+        button.textContent = option;
+        button.onclick = () => checkAnswer(option, question.answer);
+        answersContainer.appendChild(button);
+      });
+    }
+
+    function checkAnswer(selected, correct) {
+      if (selected === correct) {
+        feedback.textContent = "Correct! 🎉";
+        correctSound.play();
+      } else {
+        feedback.textContent = "Wrong! ❌";
+        wrongSound.play();
+        lives--;
+        livesText.textContent = `Lives: ${lives}`;
+        if (lives === 0) {
+          feedback.textContent = "Game Over! 😢";
+          nextBtn.disabled = true;
+        }
+      }
+    }
+
+    nextBtn.onclick = () => {
+      if (lives > 0) {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          loadQuestion();
+          feedback.textContent = '';
+        } else {
+          feedback.textContent = "You've finished the quiz! 🎉";
+          nextBtn.disabled = true;
+        }
+      }
+    };
+
+    loadQuestion();
+  </script>
+</body>
+</html>
